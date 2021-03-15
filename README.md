@@ -7,6 +7,12 @@ pyGCS (Grid Convergence Study) is a python package that calculates the Grid Conv
 
 # Installation
 
+To install pyCGS, run the following command
+
+```bash
+pip3 install pyCGS
+```
+
 # Usage
 
 The following shows how to calculate the GCI and get additional information that may be useful to establish grid independence.
