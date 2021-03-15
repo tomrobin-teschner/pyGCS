@@ -1,0 +1,5 @@
+# ignore automatically generated folders
+build/*
+dist/*
+src/pyGCS.egg-info/*
+src/pyGCS_tomrobin_teschner.egg-info/*

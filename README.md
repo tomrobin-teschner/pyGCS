@@ -1,6 +1,7 @@
-[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
-[![Generic badge](https://img.shields.io/badge/Version-v0.1.0-red.svg)](https://shields.io/)
+[![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
+[![Generic badge](https://img.shields.io/badge/Version-v0.2.0-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+
 # Introduction
 
 pyGCS (Grid Convergence Study) is a python package that calculates the Grid Convergence Index (GCI) for solutions obtained through numerical analysis using computational grids to establish the error-band of the solution with respect to the numerical grid used. This package implements the equations presented in [1] and [2].

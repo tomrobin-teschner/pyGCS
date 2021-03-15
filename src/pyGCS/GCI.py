@@ -24,6 +24,7 @@ class GCI:
 
     # = private API ====================================================================================================
     def __calculate_gci(self):
+        self.__sort_input_based_on_grid_size()
         self.__calculate_representative_grid_size()
         self.__calculate_refinement_ratio()
         self.__calculate_relative_error()
@@ -32,6 +33,10 @@ class GCI:
         self.__calculate_gci_for_each_grid()
         if len(self.__cells) >= 3:
             self.__calculate_asymptotic_grid_convergence()
+
+    def __sort_input_based_on_grid_size(self):
+        self.__cells, self.__volume, self.__solution = zip(*sorted(zip(self.__cells, self.__volume, self.__solution),
+                                                                   reverse=True))
 
     def __calculate_representative_grid_size(self):
         self.__representative_grid_size = []

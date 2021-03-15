@@ -127,3 +127,35 @@ def test_order_calculation():
     # assert
     assert len(order) == 1
     assert 1.53 < order[0] < 1.54
+
+
+def test_gci_calculation_in_reverse_order():
+    # arrange
+    grids = [4500, 8000, 18000]
+    volume = [76, 76, 76]
+    solution = [5.863, 5.972, 6.063]
+    sut = pyGCS.GCI(2, volume, grids, solution)
+
+    # act
+    gci = sut.get_gci()
+
+    # assert
+    assert len(gci) == 2
+    assert 0.0217 < gci[0] < 0.0218
+    assert 0.0411 < gci[1] < 0.0412
+
+
+def test_gci_calculation_in_random_order():
+    # arrange
+    grids = [8000, 4500, 18000]
+    volume = [76, 76, 76]
+    solution = [5.972, 5.863, 6.063]
+    sut = pyGCS.GCI(2, volume, grids, solution)
+
+    # act
+    gci = sut.get_gci()
+
+    # assert
+    assert len(gci) == 2
+    assert 0.0217 < gci[0] < 0.0218
+    assert 0.0411 < gci[1] < 0.0412
