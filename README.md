@@ -1,5 +1,5 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
-[![Generic badge](https://img.shields.io/badge/Version-v0.2.0-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Version-v0.2.1-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 # Introduction
@@ -11,7 +11,7 @@ pyGCS (Grid Convergence Study) is a python package that calculates the Grid Conv
 To install pyCGS, run the following command
 
 ```bash
-pip3 install pyCGS
+pip3 install pycgs
 ```
 
 # Usage
