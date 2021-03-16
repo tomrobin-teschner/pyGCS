@@ -4,10 +4,10 @@ class GCI:
     """This class accepts grid parameters as inputs to compute the GCI"""
 
     # = constructor ====================================================================================================
-    def __init__(self, dimension=3, domain_volume=[], cell_count=[], solution=[]):
+    def __init__(self, dimension=3, volume=[], cells=[], solution=[]):
         self.__dimension = dimension
-        self.__volume = domain_volume
-        self.__cells = cell_count
+        self.__volume = volume
+        self.__cells = cells
         self.__solution = solution
 
         self.__gci_up_to_date = False
@@ -18,6 +18,7 @@ class GCI:
         self.__relative_normalised_error = []
         self.__GCI = []
         self.__asymptotic_gci = []
+        self.__extrapolated_value = -1
         self.__safety_factor = 1.25
         if len(self.__cells) == 2:
             self.__safety_factor = 3.0
@@ -32,6 +33,7 @@ class GCI:
         self.__calculate_relative_error()
         self.__calculate_order()
         self.__calculate_relative_normalised_error()
+        self.__calculate_extrapolated_value()
         self.__calculate_gci_for_each_grid()
         if len(self.__cells) >= 3:
             self.__calculate_asymptotic_grid_convergence()
@@ -68,10 +70,23 @@ class GCI:
 
     def __calculate_order(self):
         self.__order = []
-        if len(self.__cells) == 2:
-            pass
-        elif len(self.__cells) > 2:
+        if len(self.__cells) == 3:
             self.__calculate_apparent_order()
+        else:
+            self.__calculate_apparent_order_through_least_square_regression()
+
+    # TODO: FIX least square calculation, not working at the moment
+    def __calculate_apparent_order_through_least_square_regression(self):
+        n = len(self.__cells)
+        sum_x = sum(self.__cells)
+        sum_y = sum(self.__solution)
+        sum_x2 = 0
+        sum_xy = 0
+        for i in range(0, n):
+            sum_x2 += pow(self.__cells[i], 2)
+            sum_xy += self.__cells[i] * self.__solution[i]
+        p = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x2)
+        return p
 
     def __calculate_apparent_order(self):
         for grid in range(2, len(self.__cells)):
@@ -90,7 +105,7 @@ class GCI:
         max_iteration = 100
         norm = 1
         p = 2
-        while eps > 1e-10:
+        while eps > 1e-6:
             p_old = p
             s = self.__sign(e32 / e21)
             q = log((pow(r21, p) - s) / (pow(r32, p) - s))
@@ -123,6 +138,13 @@ class GCI:
             phi2 = self.__solution[grid]
             self.__relative_normalised_error.append(fabs((phi1 - phi2) / phi1))
         assert len(self.__relative_normalised_error) == len(self.__refinement_ratio)
+
+    def __calculate_extrapolated_value(self):
+        r21 = self.__refinement_ratio[0]
+        phi_1 = self.__solution[0]
+        phi_2 = self.__solution[1]
+        p = self.__order[0]
+        self.__extrapolated_value = (pow(r21, p) * phi_1 - phi_2) / (pow(r21, p) - 1)
 
     def __calculate_gci_for_each_grid(self):
         self.__GCI = []
@@ -163,6 +185,10 @@ class GCI:
     def get_asymptotic_gci(self):
         self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
         return self.__asymptotic_gci
+
+    def get_extrapolated_value(self):
+        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
+        return self.__extrapolated_value
 
     def get_order(self):
         self.__check_if_gci_is_up_to_date_otherwise_calculate_it()

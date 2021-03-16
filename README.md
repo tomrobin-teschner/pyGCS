@@ -1,5 +1,5 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
-[![Generic badge](https://img.shields.io/badge/Version-v0.2.2-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Version-v0.2.3-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 # Introduction
@@ -40,18 +40,22 @@ gcs = pyGCS.GCI(dimension, volume, grids, solution)
 gci = gcs.get_gci()
 asymptotic_gci = gcs.get_asymptotic_gci()
 order = gcs.get_order()
+extrapolated_value = gcs.get_extrapolated_value()
 
 # GCI_32 = 4.11%
-print('GCI for coarse to medium grid (GCI_32): ' + str(gci[1] * 100) + '%')
+print(f'GCI for coarse to medium grid (GCI_32): {gci[1] * 100:.2f}%')
 
 # GCI_21 = 2.17%
-print('GCI for medium to fine   grid (GCI_21): ' + str(gci[0] * 100) + '%')
+print(f'GCI for medium to fine   grid (GCI_21): {gci[0] * 100:.2f}%')
 
 # asymptotic GCI = 1.015
-print('asymptotic GCI value (a value close to 1 indicates grid independence): ' + str(asymptotic_gci[0]))
+print(f'asymptotic GCI value (a value close to 1 indicates grid independence): {asymptotic_gci[0]:.3f}')
+
+# extrapolated value 6.1685
+print(f'Extrapolated value: {extrapolated_value:.4f}')
 
 # order = 1.53
-print('order achieved in simulation: ' + str(order[0]))
+print(f'order achieved in simulation: {order[0]:.2f}')
 ```
 
 # References

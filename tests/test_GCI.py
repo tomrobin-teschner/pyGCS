@@ -1,3 +1,4 @@
+import pytest
 import src.pyGCS as pyGCS
 
 
@@ -83,12 +84,36 @@ def test_solution_setter():
     assert sut.get_solution()[1] == 1.0
 
 
-def test_gci_calculation_based_on_volume():
+@pytest.fixture
+def grid_parameter():
+    return {
+        'volume': [76, 76, 76],
+        'grids': [18000, 8000, 4500],
+        'solution': [6.063, 5.972, 5.863]
+    }
+
+
+@pytest.fixture
+def grid_parameter_reverse_order():
+    return {
+        'volume': [76, 76, 76],
+        'grids': [4500, 8000, 18000],
+        'solution': [5.863, 5.972, 6.063]
+    }
+
+
+@pytest.fixture
+def grid_parameter_random_order():
+    return {
+        'volume': [76, 76, 76],
+        'grids': [8000, 18000, 4500],
+        'solution': [5.972, 6.063, 5.863]
+    }
+
+
+def test_gci_calculation_based_on_volume(grid_parameter):
     # arrange
-    grids = [18000, 8000, 4500]
-    volume = [76, 76, 76]
-    solution = [6.063, 5.972, 5.863]
-    sut = pyGCS.GCI(2, volume, grids, solution)
+    sut = pyGCS.GCI(2, grid_parameter['volume'], grid_parameter['grids'], grid_parameter['solution'])
 
     # act
     gci = sut.get_gci()
@@ -98,28 +123,10 @@ def test_gci_calculation_based_on_volume():
     assert 0.0217 < gci[0] < 0.0218
     assert 0.0411 < gci[1] < 0.0412
 
-def test_gci_calculation_based_on_representative_spacing():
+
+def test_asymptotic_gci_calculation(grid_parameter):
     # arrange
-    grids = [18000, 8000, 4500]
-    volume = [76, 76, 76]
-    solution = [6.063, 5.972, 5.863]
-    sut = pyGCS.GCI(2, volume, grids, solution)
-
-    # act
-    gci = sut.get_gci()
-
-    # assert
-    assert len(gci) == 2
-    assert 0.0217 < gci[0] < 0.0218
-    assert 0.0411 < gci[1] < 0.0412
-
-
-def test_asymptotic_gci_calculation():
-    # arrange
-    grids = [18000, 8000, 4500]
-    volume = [76, 76, 76]
-    solution = [6.063, 5.972, 5.863]
-    sut = pyGCS.GCI(2, volume, grids, solution)
+    sut = pyGCS.GCI(2, grid_parameter['volume'], grid_parameter['grids'], grid_parameter['solution'])
 
     # act
     asymptotic_gci = sut.get_asymptotic_gci()
@@ -129,12 +136,20 @@ def test_asymptotic_gci_calculation():
     assert 1.015 < asymptotic_gci[0] < 1.016
 
 
-def test_order_calculation():
+def test_extrapolated_value(grid_parameter):
     # arrange
-    grids = [18000, 8000, 4500]
-    volume = [76, 76, 76]
-    solution = [6.063, 5.972, 5.863]
-    sut = pyGCS.GCI(2, volume, grids, solution)
+    sut = pyGCS.GCI(2, grid_parameter['volume'], grid_parameter['grids'], grid_parameter['solution'])
+
+    # act
+    extrapolated_value = sut.get_extrapolated_value()
+
+    # assert
+    assert 6.168 < extrapolated_value < 6.169
+
+
+def test_order_calculation(grid_parameter):
+    # arrange
+    sut = pyGCS.GCI(2, grid_parameter['volume'], grid_parameter['grids'], grid_parameter['solution'])
 
     # act
     order = sut.get_order()
@@ -144,12 +159,10 @@ def test_order_calculation():
     assert 1.53 < order[0] < 1.54
 
 
-def test_gci_calculation_in_reverse_order():
+def test_gci_calculation_in_reverse_order(grid_parameter_reverse_order):
     # arrange
-    grids = [4500, 8000, 18000]
-    volume = [76, 76, 76]
-    solution = [5.863, 5.972, 6.063]
-    sut = pyGCS.GCI(2, volume, grids, solution)
+    sut = pyGCS.GCI(2, grid_parameter_reverse_order['volume'], grid_parameter_reverse_order['grids'],
+                    grid_parameter_reverse_order['solution'])
 
     # act
     gci = sut.get_gci()
@@ -160,12 +173,10 @@ def test_gci_calculation_in_reverse_order():
     assert 0.0411 < gci[1] < 0.0412
 
 
-def test_gci_calculation_in_random_order():
+def test_gci_calculation_in_random_order(grid_parameter_random_order):
     # arrange
-    grids = [8000, 4500, 18000]
-    volume = [76, 76, 76]
-    solution = [5.972, 5.863, 6.063]
-    sut = pyGCS.GCI(2, volume, grids, solution)
+    sut = pyGCS.GCI(2, grid_parameter_random_order['volume'], grid_parameter_random_order['grids'],
+                    grid_parameter_random_order['solution'])
 
     # act
     gci = sut.get_gci()
