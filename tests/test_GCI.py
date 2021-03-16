@@ -147,6 +147,19 @@ def test_extrapolated_value(grid_parameter):
     assert 6.168 < extrapolated_value < 6.169
 
 
+def test_desired_gci_calculation(grid_parameter):
+    # arrange
+    sut = pyGCS.GCI(2, grid_parameter['volume'], grid_parameter['grids'], grid_parameter['solution'])
+
+    # act
+    cells_for_smaller_gci = sut.get_number_of_cells_for_specified_gci_of(0.01)
+    cells_for_larger_gci = sut.get_number_of_cells_for_specified_gci_of(0.03)
+
+    # assert
+    assert cells_for_smaller_gci > grid_parameter['grids'][0]
+    assert cells_for_larger_gci < grid_parameter['grids'][0]
+
+
 def test_order_calculation(grid_parameter):
     # arrange
     sut = pyGCS.GCI(2, grid_parameter['volume'], grid_parameter['grids'], grid_parameter['solution'])

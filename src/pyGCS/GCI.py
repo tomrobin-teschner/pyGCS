@@ -70,23 +70,7 @@ class GCI:
 
     def __calculate_order(self):
         self.__order = []
-        if len(self.__cells) == 3:
-            self.__calculate_apparent_order()
-        else:
-            self.__calculate_apparent_order_through_least_square_regression()
-
-    # TODO: FIX least square calculation, not working at the moment
-    def __calculate_apparent_order_through_least_square_regression(self):
-        n = len(self.__cells)
-        sum_x = sum(self.__cells)
-        sum_y = sum(self.__solution)
-        sum_x2 = 0
-        sum_xy = 0
-        for i in range(0, n):
-            sum_x2 += pow(self.__cells[i], 2)
-            sum_xy += self.__cells[i] * self.__solution[i]
-        p = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x2)
-        return p
+        self.__calculate_apparent_order()
 
     def __calculate_apparent_order(self):
         for grid in range(2, len(self.__cells)):
@@ -193,6 +177,14 @@ class GCI:
     def get_order(self):
         self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
         return self.__order
+
+    def get_number_of_cells_for_specified_gci_of(self, desired_gci):
+        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
+        p = self.__order[0]
+        gci = self.__GCI[0]
+        cells = self.__cells[0]
+        r = pow((gci / desired_gci), 1.0 / p)
+        return r * cells
 
     def get_dimension(self):
         return self.__dimension

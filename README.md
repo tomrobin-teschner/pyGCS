@@ -1,5 +1,5 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
-[![Generic badge](https://img.shields.io/badge/Version-v0.2.3-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Version-v0.2.4-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 # Introduction
@@ -36,12 +36,21 @@ dimension = 2
 # create grid convergence study (gcs) object
 gcs = pyGCS.GCI(dimension, volume, grids, solution)
 
-# get GCI and supporting information
+# get GCI values (coarse-medium and medium-fine grid configuration)
 gci = gcs.get_gci()
+
+# get the asymptotic GCI (for three grid levels, it is a single value)
 asymptotic_gci = gcs.get_asymptotic_gci()
+
+# apparent (observed) order of the simulation (for three grid levels, it is a single value)
 order = gcs.get_order()
+
+# extrapolated value we would achieve for a fine enough grid with no grid induced errors
 extrapolated_value = gcs.get_extrapolated_value()
 
+# calculated grid size for a specified GCI value
+recommend_grid_size = gcs.get_number_of_cells_for_specified_gci_of(0.01)
+    
 # GCI_32 = 4.11%
 print(f'GCI for coarse to medium grid (GCI_32): {gci[1] * 100:.2f}%')
 
@@ -51,11 +60,14 @@ print(f'GCI for medium to fine   grid (GCI_21): {gci[0] * 100:.2f}%')
 # asymptotic GCI = 1.015
 print(f'asymptotic GCI value (a value close to 1 indicates grid independence): {asymptotic_gci[0]:.3f}')
 
-# extrapolated value 6.1685
+# extrapolated value = 6.1685
 print(f'Extrapolated value: {extrapolated_value:.4f}')
 
 # order = 1.53
 print(f'order achieved in simulation: {order[0]:.2f}')
+
+# recommend_grid_size = 29872
+print(f'Number of cells required to achieve a GCI of 1%: {recommend_grid_size:.0f}')
 ```
 
 # References
