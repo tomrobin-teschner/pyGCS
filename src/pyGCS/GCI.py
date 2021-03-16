@@ -11,7 +11,6 @@ class GCI:
         self.__solution = solution
 
         self.__gci_up_to_date = False
-        self.__safety_factor = 1.25
         self.__representative_grid_size = []
         self.__refinement_ratio = []
         self.__relative_error = []
@@ -19,6 +18,9 @@ class GCI:
         self.__relative_normalised_error = []
         self.__GCI = []
         self.__asymptotic_gci = []
+        self.__safety_factor = 1.25
+        if len(self.__cells) == 2:
+            self.__safety_factor = 3.0
 
     # = public API =====================================================================================================
 
@@ -196,6 +198,10 @@ class GCI:
         assert len(cell_count) > 0
         self.__cells = cell_count
         self.__gci_up_to_date = False
+        if len(self.__cells) == 2:
+            self.__safety_factor = 3.0
+        else:
+            self.__safety_factor = 1.25
 
     def set_solution(self, solution):
         assert len(solution) > 0

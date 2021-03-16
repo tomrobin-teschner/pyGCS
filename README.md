@@ -1,5 +1,5 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
-[![Generic badge](https://img.shields.io/badge/Version-v0.2.1-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Version-v0.2.2-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 # Introduction
@@ -33,13 +33,13 @@ solution = [6.063, 5.972, 5.863]
 # dimension of the simultion (here 2D)
 dimension = 2
 
-# create GCI object
-grid_convergence_study = pyGCS.GCI(dimension, volume, grids, solution)
+# create grid convergence study (gcs) object
+gcs = pyGCS.GCI(dimension, volume, grids, solution)
 
 # get GCI and supporting information
-gci = grid_convergence_study.get_gci()
-asymptotic_gci = grid_convergence_study.get_asymptotic_gci()
-order = grid_convergence_study.get_order()
+gci = gcs.get_gci()
+asymptotic_gci = gcs.get_asymptotic_gci()
+order = gcs.get_order()
 
 # GCI_32 = 4.11%
 print('GCI for coarse to medium grid (GCI_32): ' + str(gci[1] * 100) + '%')

@@ -83,7 +83,22 @@ def test_solution_setter():
     assert sut.get_solution()[1] == 1.0
 
 
-def test_gci_calculation():
+def test_gci_calculation_based_on_volume():
+    # arrange
+    grids = [18000, 8000, 4500]
+    volume = [76, 76, 76]
+    solution = [6.063, 5.972, 5.863]
+    sut = pyGCS.GCI(2, volume, grids, solution)
+
+    # act
+    gci = sut.get_gci()
+
+    # assert
+    assert len(gci) == 2
+    assert 0.0217 < gci[0] < 0.0218
+    assert 0.0411 < gci[1] < 0.0412
+
+def test_gci_calculation_based_on_representative_spacing():
     # arrange
     grids = [18000, 8000, 4500]
     volume = [76, 76, 76]
