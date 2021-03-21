@@ -1,94 +1,105 @@
 from math import pow, log, fabs
 
-class GCI:
+class GCI(object):
     """This class accepts grid parameters as inputs to compute the GCI"""
 
     # = constructor ====================================================================================================
-    def __init__(self, dimension=3, volume=[], cells=[], solution=[]):
-        self.__dimension = dimension
-        self.__volume = volume
-        self.__cells = cells
-        self.__solution = solution
+    def __init__(self, **kwargs):
+        self.__data = {}
+        for key, value in kwargs.items():
+            self.__data[key] = value
 
-        self.__gci_up_to_date = False
-        self.__representative_grid_size = []
-        self.__refinement_ratio = []
-        self.__relative_error = []
-        self.__order = []
-        self.__relative_normalised_error = []
-        self.__GCI = []
-        self.__asymptotic_gci = []
-        self.__extrapolated_value = -1
-        self.__safety_factor = 1.25
-        if len(self.__cells) == 2:
-            self.__safety_factor = 3.0
+        self.__data['safety_factor'] = 1.25
+        if len(self.__data['cells']) == 2:
+            self.__data['safety_factor'] = 3.0
+
+        if 'simulation_order' not in self.__data:
+            self.__data['simulation_order'] = 2
+
+        if 'dimension' not in self.__data:
+            self.__data['dimension'] = 3
+
+        self.__data['gci_up_to_date'] = False
 
     # = public API =====================================================================================================
 
     # = private API ====================================================================================================
     def __calculate_gci(self):
-        self.__sort_input_based_on_grid_size()
         self.__calculate_representative_grid_size()
+        self.__sort_input_based_on_grid_size()
         self.__calculate_refinement_ratio()
         self.__calculate_relative_error()
         self.__calculate_order()
         self.__calculate_relative_normalised_error()
         self.__calculate_extrapolated_value()
         self.__calculate_gci_for_each_grid()
-        if len(self.__cells) >= 3:
+        if len(self.__data['cells']) >= 3:
             self.__calculate_asymptotic_grid_convergence()
 
     def __sort_input_based_on_grid_size(self):
-        self.__cells, self.__volume, self.__solution = zip(*sorted(zip(self.__cells, self.__volume, self.__solution),
-                                                                   reverse=True))
+        if 'volume' in self.__data:
+            if type(self.__data['volume']) is list:
+                assert len(self.__data['volume']) == len(self.__data['cells'])
+                self.__data['cells'], self.__data['grid_size'], self.__data['volume'], self.__data['solution'] = zip(
+                    *sorted(zip(self.__data['cells'], self.__data['grid_size'], self.__data['volume'],
+                                self.__data['solution']), reverse=True))
+        else:
+            self.__data['cells'], self.__data['grid_size'], self.__data['solution'] = zip(
+                *sorted(zip(self.__data['cells'], self.__data['grid_size'], self.__data['solution']), reverse=True))
 
     def __calculate_representative_grid_size(self):
-        self.__representative_grid_size = []
-        for grid in range(0, len(self.__cells)):
-            h = pow(self.__volume[grid] / self.__cells[grid], 1.0 / self.__dimension)
-            self.__representative_grid_size.append(h)
+        if ('volume' in self.__data) and ('grid_size' not in self.__data):
+            self.__data['grid_size'] = []
+            for grid in range(0, len(self.__data['cells'])):
+                if type(self.__data['volume']) is list:
+                    assert len(self.__data['volume']) == len(self.__data['cells'])
+                    volume = self.__data['volume'][grid]
+                else:
+                    volume = self.__data['volume']
+                h = pow(volume / self.__data['cells'][grid], 1.0 / self.__data['dimension'])
+                self.__data['grid_size'].append(h)
 
     def __calculate_refinement_ratio(self):
         self.__refinement_ratio = []
-        assert len(self.__representative_grid_size) == len(self.__cells)
-        for grid in range(1, len(self.__representative_grid_size)):
-            h1 = self.__representative_grid_size[grid - 1]
-            h2 = self.__representative_grid_size[grid]
+        assert len(self.__data['grid_size']) == len(self.__data['cells'])
+        for grid in range(1, len(self.__data['grid_size'])):
+            h1 = self.__data['grid_size'][grid - 1]
+            h2 = self.__data['grid_size'][grid]
             ratio = h2 / h1
             assert ratio > 1
             self.__refinement_ratio.append(ratio)
-        assert len(self.__representative_grid_size) - 1 == len(self.__refinement_ratio)
+        assert len(self.__data['grid_size']) - 1 == len(self.__refinement_ratio)
 
     def __calculate_relative_error(self):
-        self.__relative_error = []
-        assert len(self.__solution) == len(self.__cells)
-        for grid in range(1, len(self.__solution)):
-            phi1 = self.__solution[grid - 1]
-            phi2 = self.__solution[grid]
-            self.__relative_error.append(phi2 - phi1)
-        assert len(self.__relative_error) == len(self.__refinement_ratio)
+        self.__data['relative_error'] = []
+        assert len(self.__data['solution']) == len(self.__data['cells'])
+        for grid in range(1, len(self.__data['solution'])):
+            phi1 = self.__data['solution'][grid - 1]
+            phi2 = self.__data['solution'][grid]
+            self.__data['relative_error'].append(phi2 - phi1)
+        assert len(self.__data['relative_error']) == len(self.__refinement_ratio)
 
     def __calculate_order(self):
-        self.__order = []
+        self.__data['apparent_order'] = []
         self.__calculate_apparent_order()
 
     def __calculate_apparent_order(self):
-        for grid in range(2, len(self.__cells)):
-            e21 = self.__relative_error[grid - 2]
-            e32 = self.__relative_error[grid - 1]
+        for grid in range(2, len(self.__data['cells'])):
+            e21 = self.__data['relative_error'][grid - 2]
+            e32 = self.__data['relative_error'][grid - 1]
 
             r21 = self.__refinement_ratio[grid - 2]
             r32 = self.__refinement_ratio[grid - 1]
 
             p = self.__find_apparent_order_iteratively(e21, e32, r21, r32)
-            self.__order.append(p)
+            self.__data['apparent_order'].append(p)
 
     def __find_apparent_order_iteratively(self, e21, e32, r21, r32):
         eps = 1
         iteration = 1
         max_iteration = 100
         norm = 1
-        p = 2
+        p = self.__data['simulation_order']
         while eps > 1e-6:
             p_old = p
             s = self.__sign(e32 / e21)
@@ -116,117 +127,65 @@ class GCI:
 
     def __calculate_relative_normalised_error(self):
         self.__relative_normalised_error = []
-        assert len(self.__solution) == len(self.__cells)
-        for grid in range(1, len(self.__solution)):
-            phi1 = self.__solution[grid - 1]
-            phi2 = self.__solution[grid]
+        assert len(self.__data['solution']) == len(self.__data['cells'])
+        for grid in range(1, len(self.__data['solution'])):
+            phi1 = self.__data['solution'][grid - 1]
+            phi2 = self.__data['solution'][grid]
             self.__relative_normalised_error.append(fabs((phi1 - phi2) / phi1))
         assert len(self.__relative_normalised_error) == len(self.__refinement_ratio)
 
     def __calculate_extrapolated_value(self):
         r21 = self.__refinement_ratio[0]
-        phi_1 = self.__solution[0]
-        phi_2 = self.__solution[1]
-        p = self.__order[0]
-        self.__extrapolated_value = (pow(r21, p) * phi_1 - phi_2) / (pow(r21, p) - 1)
+        phi_1 = self.__data['solution'][0]
+        phi_2 = self.__data['solution'][1]
+        p = self.__data['apparent_order'][0]
+        self.__data['extrapolated_value'] = (pow(r21, p) * phi_1 - phi_2) / (pow(r21, p) - 1)
 
     def __calculate_gci_for_each_grid(self):
-        self.__GCI = []
-        for grid in range(1, len(self.__cells)):
+        self.__data['gci'] = []
+        for grid in range(1, len(self.__data['cells'])):
             ea21 = self.__relative_normalised_error[grid - 1]
             r21 = self.__refinement_ratio[grid - 1]
-            if len(self.__order) == 1:
-                p = self.__order[0]
+            if len(self.__data['apparent_order']) == 1:
+                p = self.__data['apparent_order'][0]
             else:
-                p = self.__order[grid - 1]
-            gci = (self.__safety_factor * ea21) / (pow(r21, p) - 1.0)
-            self.__GCI.append(gci)
-        assert len(self.__GCI) == len(self.__cells) - 1
+                p = self.__data['apparent_order'][grid - 1]
+            gci = (self.__data['safety_factor'] * ea21) / (pow(r21, p) - 1.0)
+            self.__data['gci'].append(gci)
+        assert len(self.__data['gci']) == len(self.__data['cells']) - 1
 
     def __calculate_asymptotic_grid_convergence(self):
-        self.__asymptotic_gci = []
-        for grid in range(2, len(self.__cells)):
-            if len(self.__order) == 1:
-                p = self.__order[0]
+        self.__data['asymptotic_gci'] = []
+        for grid in range(2, len(self.__data['cells'])):
+            if len(self.__data['apparent_order']) == 1:
+                p = self.__data['apparent_order'][0]
             else:
-                p = self.__order[grid - 2]
-            gci21 = self.__GCI[grid - 2]
-            gci32 = self.__GCI[grid - 1]
+                p = self.__data['apparent_order'][grid - 2]
+            gci21 = self.__data['gci'][grid - 2]
+            gci32 = self.__data['gci'][grid - 1]
             r21 = self.__refinement_ratio[grid - 2]
             asymptotic_gci = gci32 / (pow(r21, p) * gci21)
-            self.__asymptotic_gci.append(asymptotic_gci)
+            self.__data['asymptotic_gci'].append(asymptotic_gci)
 
     def __check_if_gci_is_up_to_date_otherwise_calculate_it(self):
-        if self.__gci_up_to_date is False:
+        if self.__data['gci_up_to_date'] is False:
             self.__calculate_gci()
-            self.__gci_up_to_date = True
+            self.__data['gci_up_to_date'] = True
 
     # = getter =========================================================================================================
-    def get_gci(self):
-        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
-        return self.__GCI
-
-    def get_asymptotic_gci(self):
-        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
-        return self.__asymptotic_gci
-
-    def get_extrapolated_value(self):
-        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
-        return self.__extrapolated_value
-
-    def get_order(self):
-        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
-        return self.__order
-
     def get_number_of_cells_for_specified_gci_of(self, desired_gci):
         self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
-        p = self.__order[0]
-        gci = self.__GCI[0]
-        cells = self.__cells[0]
+        p = self.__data['apparent_order'][0]
+        gci = self.__data['gci'][0]
+        cells = self.__data['cells'][0]
         r = pow((gci / desired_gci), 1.0 / p)
         return r * cells
 
-    def get_dimension(self):
-        return self.__dimension
-
-    def get_volume(self):
-        return self.__volume
-
-    def get_cells(self):
-        return self.__cells
-
-    def get_solution(self):
-        return self.__solution
-
-    def get_safety_factor(self):
-        return self.__safety_factor
+    def get(self, key):
+        self.__check_if_gci_is_up_to_date_otherwise_calculate_it()
+        return self.__data[key]
 
     # = setter =========================================================================================================
-    def set_dimension(self, dimension):
-        assert 1 <= dimension <= 3
-        self.__dimension = dimension
-        self.__gci_up_to_date = False
-
-    def set_volume(self, volume):
-        assert len(volume) > 0
-        self.__volume = volume
-        self.__gci_up_to_date = False
-
-    def set_cells(self, cell_count):
-        assert len(cell_count) > 0
-        self.__cells = cell_count
-        self.__gci_up_to_date = False
-        if len(self.__cells) == 2:
-            self.__safety_factor = 3.0
-        else:
-            self.__safety_factor = 1.25
-
-    def set_solution(self, solution):
-        assert len(solution) > 0
-        self.__solution = solution
-        self.__gci_up_to_date = False
-
-    def set_safety_factor(self, factor):
-        assert factor > 0
-        self.__safety_factor = factor
-        self.__gci_up_to_date = False
+    def set(self, key, value):
+        self.__data[key] = value
+        self.__data['gci_up_to_date'] = False
