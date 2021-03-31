@@ -1,5 +1,5 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
-[![Generic badge](https://img.shields.io/badge/Version-v0.3.0-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Version-v0.3.1-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 # Introduction
@@ -26,72 +26,72 @@ The following shows an example calculation taken from reference [1] and 3 differ
 import pyGCS
 
 # create grid convergence study (gcs) object either based on volume og grid size
-    # single volume
-    gcs_single_volume = pyGCS.GCI(dimension=2, simulation_order=2, volume=76, cells=[18000, 8000, 4500],
-                                  solution=[6.063, 5.972, 5.863])
+# single volume
+gcs_single_volume = pyGCS.GCI(dimension=2, simulation_order=2, volume=76, cells=[18000, 8000, 4500],
+                              solution=[6.063, 5.972, 5.863])
 
-    # potentially varying domain size
-    gcs_multiple_volumes = pyGCS.GCI(dimension=2, simulation_order=2, volume=[76, 76, 76], cells=[18000, 8000, 4500],
-                                     solution=[6.063, 5.972, 5.863])
+# potentially varying domain size
+gcs_multiple_volumes = pyGCS.GCI(dimension=2, simulation_order=2, volume=[76, 76, 76], cells=[18000, 8000, 4500],
+                                 solution=[6.063, 5.972, 5.863])
 
-    # specify representative grid spacing directly
-    gcs_with_grid_size = pyGCS.GCI(dimension=2, simulation_order=2, grid_size=[0.75, 1.125, 1.5],
-                                   cells=[18000, 8000, 4500], solution=[6.063, 5.972, 5.863])
+# specify representative grid spacing directly
+gcs_with_grid_size = pyGCS.GCI(dimension=2, simulation_order=2, grid_size=[0.75, 1.125, 1.5],
+                               cells=[18000, 8000, 4500], solution=[6.063, 5.972, 5.863])
 
-    # get GCI values (coarse-medium and medium-fine grid configuration)
-    gci_1 = gcs_single_volume.get('gci')
-    gci_2 = gcs_multiple_volumes.get('gci')
-    gci_3 = gcs_with_grid_size.get('gci')
+# get GCI values (coarse-medium and medium-fine grid configuration)
+gci_1 = gcs_single_volume.get('gci')
+gci_2 = gcs_multiple_volumes.get('gci')
+gci_3 = gcs_with_grid_size.get('gci')
 
-    # get the asymptotic GCI (for three grid levels, it is a single value)
-    asymptotic_gci_1 = gcs_single_volume.get('asymptotic_gci')
-    asymptotic_gci_2 = gcs_multiple_volumes.get('asymptotic_gci')
-    asymptotic_gci_3 = gcs_with_grid_size.get('asymptotic_gci')
+# get the asymptotic GCI (for three grid levels, it is a single value)
+asymptotic_gci_1 = gcs_single_volume.get('asymptotic_gci')
+asymptotic_gci_2 = gcs_multiple_volumes.get('asymptotic_gci')
+asymptotic_gci_3 = gcs_with_grid_size.get('asymptotic_gci')
 
-    # apparent (observed) order of the simulation (for three grid levels, it is a single value)
-    order_1 = gcs_single_volume.get('apparent_order')
-    order_2 = gcs_multiple_volumes.get('apparent_order')
-    order_3 = gcs_with_grid_size.get('apparent_order')
+# apparent (observed) order of the simulation (for three grid levels, it is a single value)
+order_1 = gcs_single_volume.get('apparent_order')
+order_2 = gcs_multiple_volumes.get('apparent_order')
+order_3 = gcs_with_grid_size.get('apparent_order')
 
-    # extrapolated value we would achieve for a fine enough grid with no grid induced errors
-    extrapolated_value_1 = gcs_single_volume.get('extrapolated_value')
-    extrapolated_value_2 = gcs_multiple_volumes.get('extrapolated_value')
-    extrapolated_value_3 = gcs_with_grid_size.get('extrapolated_value')
+# extrapolated value we would achieve for a fine enough grid with no grid induced errors
+extrapolated_value_1 = gcs_single_volume.get('extrapolated_value')
+extrapolated_value_2 = gcs_multiple_volumes.get('extrapolated_value')
+extrapolated_value_3 = gcs_with_grid_size.get('extrapolated_value')
 
-    # calculated grid size for a specified GCI value
-    recommend_grid_size_1 = gcs_single_volume.get_number_of_cells_for_specified_gci_of(0.01)
-    recommend_grid_size_2 = gcs_multiple_volumes.get_number_of_cells_for_specified_gci_of(0.01)
-    recommend_grid_size_3 = gcs_with_grid_size.get_number_of_cells_for_specified_gci_of(0.01)
+# calculated grid size for a specified GCI value
+recommend_grid_size_1 = gcs_single_volume.get_number_of_cells_for_specified_gci_of(0.01)
+recommend_grid_size_2 = gcs_multiple_volumes.get_number_of_cells_for_specified_gci_of(0.01)
+recommend_grid_size_3 = gcs_with_grid_size.get_number_of_cells_for_specified_gci_of(0.01)
 
-    # GCI_32 = 4.11%
-    print(f'GCI (1st approach) for coarse to medium grid (GCI_32): {gci_1[1] * 100:.2f}%')
-    print(f'GCI (2nd approach) for coarse to medium grid (GCI_32): {gci_2[1] * 100:.2f}%')
-    print(f'GCI (3rd approach) for coarse to medium grid (GCI_32): {gci_3[1] * 100:.2f}%\n')
+# GCI_32 = 4.11%
+print(f'GCI (1st approach) for coarse to medium grid (GCI_32): {gci_1[1] * 100:.2f}%')
+print(f'GCI (2nd approach) for coarse to medium grid (GCI_32): {gci_2[1] * 100:.2f}%')
+print(f'GCI (3rd approach) for coarse to medium grid (GCI_32): {gci_3[1] * 100:.2f}%\n')
 
-    # GCI_21 = 2.17%
-    print(f'GCI (1st approach) for medium to fine   grid (GCI_21): {gci_1[0] * 100:.2f}%')
-    print(f'GCI (2nd approach) for medium to fine   grid (GCI_21): {gci_2[0] * 100:.2f}%')
-    print(f'GCI (3rd approach) for medium to fine   grid (GCI_21): {gci_3[0] * 100:.2f}%\n')
+# GCI_21 = 2.17%
+print(f'GCI (1st approach) for medium to fine   grid (GCI_21): {gci_1[0] * 100:.2f}%')
+print(f'GCI (2nd approach) for medium to fine   grid (GCI_21): {gci_2[0] * 100:.2f}%')
+print(f'GCI (3rd approach) for medium to fine   grid (GCI_21): {gci_3[0] * 100:.2f}%\n')
 
-    # asymptotic GCI = 1.015
-    print(f'asymptotic GCI value (1st approach, a value close to 1 indicates grid independence): {asymptotic_gci_1[0]:.3f}')
-    print(f'asymptotic GCI value (2nd approach, a value close to 1 indicates grid independence): {asymptotic_gci_2[0]:.3f}')
-    print(f'asymptotic GCI value (3rd approach, a value close to 1 indicates grid independence): {asymptotic_gci_3[0]:.3f}\n')
+# asymptotic GCI = 1.015
+print(f'asymptotic GCI value (1st approach, a value close to 1 indicates grid independence): {asymptotic_gci_1[0]:.3f}')
+print(f'asymptotic GCI value (2nd approach, a value close to 1 indicates grid independence): {asymptotic_gci_2[0]:.3f}')
+print(f'asymptotic GCI value (3rd approach, a value close to 1 indicates grid independence): {asymptotic_gci_3[0]:.3f}\n')
 
-    # extrapolated value = 6.1685
-    print(f'Extrapolated value (1st approach): {extrapolated_value_1:.4f}')
-    print(f'Extrapolated value (2nd approach): {extrapolated_value_2:.4f}')
-    print(f'Extrapolated value (3rd approach): {extrapolated_value_3:.4f}\n')
+# extrapolated value = 6.1685
+print(f'Extrapolated value (1st approach): {extrapolated_value_1:.4f}')
+print(f'Extrapolated value (2nd approach): {extrapolated_value_2:.4f}')
+print(f'Extrapolated value (3rd approach): {extrapolated_value_3:.4f}\n')
 
-    # order = 1.53
-    print(f'order achieved in simulation (1st approach): {order_1[0]:.2f}')
-    print(f'order achieved in simulation (2nd approach): {order_2[0]:.2f}')
-    print(f'order achieved in simulation (3rd approach): {order_3[0]:.2f}\n')
+# order = 1.53
+print(f'order achieved in simulation (1st approach): {order_1[0]:.2f}')
+print(f'order achieved in simulation (2nd approach): {order_2[0]:.2f}')
+print(f'order achieved in simulation (3rd approach): {order_3[0]:.2f}\n')
 
-    # recommend_grid_size = 29872
-    print(f'Number of cells required to achieve a GCI of 1% (1st approach): {recommend_grid_size_1:.0f}')
-    print(f'Number of cells required to achieve a GCI of 1% (2nd approach): {recommend_grid_size_2:.0f}')
-    print(f'Number of cells required to achieve a GCI of 1% (3rd approach): {recommend_grid_size_3:.0f}')
+# recommend_grid_size = 29872
+print(f'Number of cells required to achieve a GCI of 1% (1st approach): {recommend_grid_size_1:.0f}')
+print(f'Number of cells required to achieve a GCI of 1% (2nd approach): {recommend_grid_size_2:.0f}')
+print(f'Number of cells required to achieve a GCI of 1% (3rd approach): {recommend_grid_size_3:.0f}')
 ```
 
 # References

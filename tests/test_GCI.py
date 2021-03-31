@@ -105,8 +105,7 @@ def test_asymptotic_gci_calculation(example_grid_celik):
     asymptotic_gci = sut.get('asymptotic_gci')
 
     # assert
-    assert len(asymptotic_gci) == 1
-    assert 1.015 < asymptotic_gci[0] < 1.016
+    assert 1.015 < asymptotic_gci < 1.016
 
 
 def test_extrapolated_value(example_grid_celik):
@@ -142,8 +141,7 @@ def test_order_calculation(example_grid_celik):
     order = sut.get('apparent_order')
 
     # assert
-    assert len(order) == 1
-    assert 1.53 < order[0] < 1.54
+    assert 1.53 < order < 1.54
 
 
 def test_gci_calculation_in_reverse_order(example_grid_celik_reverse_order):
