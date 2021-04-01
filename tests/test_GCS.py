@@ -5,8 +5,14 @@ from math import fabs
 
 @pytest.fixture
 def airfoil_grid_4_grids():
-    return pyGCS.GCS(dimension=2, volume=456.745, cells=[31719, 41002, 51383, 67209],
+    return pyGCS.GCS(dimension=2, simulation_order=2, volume=456.745, cells=[31719, 41002, 51383, 67209],
                      solution=[0.00919801, 0.00871879, 0.00852288, 0.00842471])
+
+
+@pytest.fixture
+def airfoil_grid_4_grids_reverse_order():
+    return pyGCS.GCS(dimension=2, simulation_order=2, volume=456.745, cells=[67209, 51383, 41002, 31719],
+                     solution=[0.00842471, 0.00852288, 0.00871879, 0.00919801])
 
 
 def test_4_grids_gci(airfoil_grid_4_grids):
@@ -54,3 +60,18 @@ def test_4_grids_asymptotic_gci(airfoil_grid_4_grids):
 
     # assert
     assert len(apparent_order) == 2
+
+
+def test_4_grids_gci_reverse_order(airfoil_grid_4_grids, airfoil_grid_4_grids_reverse_order):
+    # arrange
+    sut = airfoil_grid_4_grids
+    sut_reverse = airfoil_grid_4_grids_reverse_order
+
+    # act
+    gci = sut.get('gci')
+    gci_reverse = sut_reverse.get('gci')
+
+    # assert
+    assert gci == gci_reverse
+
+    sut.print_table()

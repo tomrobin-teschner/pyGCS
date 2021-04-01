@@ -3,21 +3,26 @@ from .GCI import GCI
 
 class GCS(object):
     """This class delegates the GCI computation and formats the output in a user friendly way"""
+
     def __init__(self, **kwargs):
         # we can only perform a GCI study for 3 grids. If we have more, we need to perform more. For 4 grids, we need
         # 2 gci studies, for 5 grids 3 gci studies, and so on.
         assert 'solution' in kwargs
-        number_of_gci_studies_required = len(kwargs['solution']) - 2
+        self.number_of_gci_studies_required = len(kwargs['solution']) - 2
 
         # setup data structure
         self.__data = {}
-        self.__data['gci'] = list(range(number_of_gci_studies_required))
-        self.__data['asymptotic_gci'] = list(range(number_of_gci_studies_required))
-        self.__data['apparent_order'] = list(range(number_of_gci_studies_required))
-        self.__data['extrapolated_value'] = list(range(number_of_gci_studies_required))
+        self.__data['gci'] = list(range(self.number_of_gci_studies_required))
+        self.__data['cells'] = list(range(self.number_of_gci_studies_required))
+        self.__data['solution'] = list(range(self.number_of_gci_studies_required))
+        self.__data['refinement_ratio'] = list(range(self.number_of_gci_studies_required))
+        self.__data['asymptotic_gci'] = list(range(self.number_of_gci_studies_required))
+        self.__data['apparent_order'] = list(range(self.number_of_gci_studies_required))
+        self.__data['extrapolated_value'] = list(range(self.number_of_gci_studies_required))
 
         self.__gci = []
-        for study in range(0, number_of_gci_studies_required):
+        kwargs = self.__sort(**kwargs)
+        for study in range(0, self.number_of_gci_studies_required):
             # create new input arguments
             new_input = {}
             for key, value in kwargs.items():
@@ -35,10 +40,86 @@ class GCS(object):
 
             # gather data
             self.__data['gci'][study] = gci_study.get('gci')
+            self.__data['cells'][study] = gci_study.get('cells')
+            self.__data['solution'][study] = gci_study.get('solution')
+            self.__data['refinement_ratio'][study] = gci_study.get('refinement_ratio')
             self.__data['asymptotic_gci'][study] = gci_study.get('asymptotic_gci')
             self.__data['apparent_order'][study] = gci_study.get('apparent_order')
             self.__data['extrapolated_value'][study] = gci_study.get('extrapolated_value')
 
+    def __sort(self, **kwargs):
+        if 'volume' in kwargs:
+            if type(kwargs['volume']) is list:
+                assert len(kwargs['volume']) == len(kwargs['cells'])
+                kwargs['cells'], kwargs['volume'], kwargs['solution'] = zip(*sorted(zip(kwargs['cells'],
+                                                                                        kwargs['volume'],
+                                                                                        kwargs['solution']),
+                                                                                    reverse=True))
+            else:
+                kwargs['cells'], kwargs['solution'] = zip(*sorted(zip(kwargs['cells'], kwargs['solution']),
+                                                                  reverse=True))
+        else:
+            kwargs['cells'], kwargs['solution'] = zip(*sorted(zip(kwargs['cells'], kwargs['solution']), reverse=True))
+        return kwargs
+
     def get(self, key):
         return self.__data[key]
 
+    def print_table(self, type='markdown'):
+        if type == 'markdown':
+            self.__markdown_table()
+        elif type == 'latex':
+            self.__latex_table()
+
+    def __markdown_table(self):
+        table = f'''
+|        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |
+|--------|:---------:|:-----------:|:---:|:-----:|:--------------:|:----:|:----------------:|'''
+        for study in range(0, self.number_of_gci_studies_required):
+            table += f'''
+|        |           |             |     |       |                |      |                  |
+| Grid {study+1} | {self.__data['solution'][study][0]:.3e} | {self.__data['cells'][study][0]:11d} | {self.__data['refinement_ratio'][study][0]:.1f} | {100 * self.__data['gci'][study][0]:.2f}% |                |      |                  |
+| Grid {study+2} | {self.__data['solution'][study][1]:.3e} | {self.__data['cells'][study][1]:11d} | {self.__data['refinement_ratio'][study][1]:.1f} | {100 * self.__data['gci'][study][1]:.2f}% |      {self.__data['asymptotic_gci'][study]:.3f}     | {self.__data['apparent_order'][study]:.2f} |     {self.__data['extrapolated_value'][study]:.2e}     |
+| Grid {study+3} | {self.__data['solution'][study][2]:.3e} | {self.__data['cells'][study][2]:11d} | -   | -     |                |      |                  |'''
+        table += f'''
+|        |           |             |     |       |                |      |                  |'''
+        file = open('table.md', 'w')
+        file.write(table)
+        file.close()
+
+    def __latex_table(self):
+
+        table = f'''
+% You have to add the following packages to your preamble to make this table work in your document
+% \\usepackage{{booktabs}}
+% \\usepackage{{multirow}}
+\\begin{{table}}[tbp]
+\\caption{{Grid convergence study over {self.number_of_gci_studies_required + 2} grids. $ \phi $ represents the \\textbf{{INSERT MEANING OF PHI HERE}} and $ \phi_{{extrapolated}} $ its extrapolated value. $ N_{{cells}} $ is the number of grid elements, $ r $ the refinement ration between two successive grids. $ GCI $ is the grid convergence index in percent and its asymptotic value is provided by $ GCI_{{asymptotic}} $, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by $ p $.}}
+\\label{{tab:gci_study}}
+\\begin{{tabular}}{{@{{}}lccccccc@{{}}}}
+\\toprule
+& $ \phi $ & $ N_{{cells}} $ & $ r $ & $ GCI $ & $ GCI_{{asymptotic}} $ & $ p $ & $ \phi_{{extrapolated}} $ \\\\ \\midrule
+'''
+        for study in range(0, self.number_of_gci_studies_required):
+
+            table += f'''
+Grid {study+1} & {self.__data['solution'][study][0]:.3e} & {self.__data['cells'][study][0]} & {self.__data['refinement_ratio'][study][0]:.1f} & {100 * self.__data['gci'][study][0]:.2f}\\%   & \\multirow{{3}}{{*}}{{ {self.__data['asymptotic_gci'][study]:.3f} }} & \\multirow{{3}}{{*}}{{ {self.__data['apparent_order'][study]:.2f} }} & \\multirow{{3}}{{*}}{{ {self.__data['extrapolated_value'][study]:.2e} }} \\\\
+Grid {study+2} & {self.__data['solution'][study][1]:.2e} & {self.__data['cells'][study][1]}  & {self.__data['refinement_ratio'][study][1]:.1f} & {100 * self.__data['gci'][study][1]:.2f}\\% &                       &                      &                       \\\\
+'''
+            if study == self.number_of_gci_studies_required - 1:
+                table += f'''Grid {study+3} & {self.__data['solution'][study][2]:.2e} & {self.__data['cells'][study][2]}  & -   & -     &                       &                      &                       \\\\ \\bottomrule
+                '''
+            else:
+                table += f'''Grid {study+3} & {self.__data['solution'][study][2]:.2e} & {self.__data['cells'][study][2]}  & -   & -     &                       &                      &                       \\\\ \\cmidrule(r){{1-8}}
+                '''
+
+        table += f'''
+\\end{{tabular}}
+\\end{{table}}
+% Generated using pyGCS (Grid Convergence Study)
+% - https://github.com/tomrobin-teschner/pyGCS
+% - https://pypi.org/project/pygcs/
+'''
+        file = open('table.tex', 'w')
+        file.write(table)
+        file.close()
