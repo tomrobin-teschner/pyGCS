@@ -20,6 +20,15 @@ class GCI(object):
         if 'dimension' not in self.__data:
             self.__data['dimension'] = 3
 
+        # limit the order in the GCI calculation based on Oberkampf and Roy
+        # See: https://doi.org/10.1017/CBO9780511760396.012, page 326, Table 8.1
+        if 'oberkampf_correction' not in kwargs:
+            self.__data['oberkampf_correction'] = False
+
+
+        if 'oberkampf_correction' in key and 'simulation_order' not in key:
+            raise Exception('Order of simulation required if Oberkampf and Roy corrections is to be applied!')
+
         self.__data['gci_up_to_date'] = False
 
     # = public API =====================================================================================================
@@ -34,6 +43,7 @@ class GCI(object):
         self.__calculate_order()
         self.__calculate_relative_normalised_error()
         self.__calculate_extrapolated_value()
+        self.__apply_oberkamp_correction()
         self.__calculate_gci_for_each_grid()
         self.__calculate_asymptotic_grid_convergence()
 
@@ -142,6 +152,21 @@ class GCI(object):
         phi_2 = self.__data['solution'][1]
         p = self.__data['apparent_order']
         self.__data['extrapolated_value'] = (pow(r21, p) * phi_1 - phi_2) / (pow(r21, p) - 1)
+
+    def __apply_oberkamp_correction(self):
+        if self.__data['oberkampf_correction']:
+            apparent_order = self.__data['apparent_order']
+            simulation_order = self.__data['simulation_order']
+
+            order_indicator = fabs((apparent_order - simulation_order) / simulation_order)
+
+            if order_indicator <= 0.1:
+                self.__data['safety_factor'] = 1.25
+            elif order_indicator > 0.1:
+                self.__data['safety_factor'] = 3.0
+
+            oberkampf_order = min(max(0.5, apparent_order), simulation_order)
+            self.__data['apparent_order'] = oberkampf_order
 
     def __calculate_gci_for_each_grid(self):
         self.__data['gci'] = []

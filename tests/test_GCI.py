@@ -58,6 +58,13 @@ def example_grid_celik_with_representative_size():
                      solution=[6.063, 5.972, 5.863])
 
 
+@pytest.fixture
+def oberkampf_correction():
+    return pyGCS.GCI(dimension=2, simulation_order=2, volume=456.745, oberkampf_correction=True,
+                     cells=[51383, 41002, 31719],
+                     solution=[0.00852288, 0.00871879, 0.00919801])
+
+
 def test_gci_calculation_based_on_volume(example_grid_celik):
     # arrange
     sut = example_grid_celik
@@ -168,3 +175,14 @@ def test_gci_calculation_in_random_order(example_grid_celik_random_order):
     assert len(gci) == 2
     assert 0.0217 < gci[0] < 0.0218
     assert 0.0411 < gci[1] < 0.0412
+
+
+def test_oberkampf_correction(oberkampf_correction):
+    # arrange
+    sut = oberkampf_correction
+
+    # act
+    order = sut.get('apparent_order')
+
+    # assert
+    assert order == 2

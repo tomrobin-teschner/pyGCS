@@ -1,5 +1,5 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
-[![Generic badge](https://img.shields.io/badge/Version-v1.0.1-red.svg)](https://shields.io/)
+[![Generic badge](https://img.shields.io/badge/Version-v1.1.0-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 # Table of Contents
@@ -16,7 +16,9 @@
 
     4.4 [Using more than 3 grids](#44-using-more-than-3-grids)
 
-    4.5 [Working with the low-level GCI class](#45-working-with-the-low-level-gci-class)
+    4.5 [Using the Oberkampf and Roy correction](#45-using-the-oberkampf-and-roy-correction)
+
+    4.6 [Working with the low-level GCI class](#46-working-with-the-low-level-gci-class)
 
 5. [References](#5-references)
 
@@ -167,7 +169,6 @@ When working with more than 3 grid levels, we have to compute separate GCIs for 
 ```python
 from pyGCS import GCS
 
-
 # create a grid convergence study object based on a constant domain volume
 gcs = GCS(dimension=2, simulation_order=2, volume=456.745,
           cells=[31719, 41002, 51383, 67209],
@@ -206,7 +207,77 @@ This will generate the following outputs:
 
 ![]( images/word_4_grids.PNG )
 
-## [4.5 Working with the low-level GCI class](#)
+## [4.5 Using the Oberkampf and Roy correction](#)
+
+Oberkampf and Roy [3] suggested to clamp the apparent order which is iteratively calculated as part of the GCI caluclation to a lower- and upper-bound. The lower bound is set to 0.5 while the upper-bound is equal to the simulation order, i.e. the order of the numerical scheme(s) used. As shown in [3], the order should be calculated as
+
+oberkampf_order = min(max(0.5, apparent_order), simulation_order)
+
+Furthermore, the safety factor used in the GCI calculation is adapted based on:
+
+- safety_factor = 1.25 if abs((apparent_order - simulation_order) / simulation_order) <= 0.1
+- safety_factor = 3.0 if abs((apparent_order - simulation_order) / simulation_order) > 0.1
+
+The correction according to Oberkampf and Roy is set to ```False``` by default and needs to be activated through the appropriate key in the constructor call of either the ```GCS``` or ```GCI``` class. It can be set explicitly to false, as shown in the following example:
+
+```python
+from pyGCS import GCS
+
+ # create a grid convergence study object without oberkampg correction
+ gcs = pyGCS.GCS(dimension=2, simulation_order=2, volume=456.745, oberkampf_correction=False,
+                 cells=[67209, 51383, 41002, 31719],
+                 solution=[0.00842471, 0.00852288, 0.00871879, 0.00919801])
+
+ # output information to Markdown-formated table
+ gcs.print_table(output_type='markdown', output_path='.')
+```
+
+This produces the following GCI calculation:
+
+|        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |
+|--------|:---------:|:-----------:|:---:|:-----:|:--------------:|:----:|:----------------:|
+|        |           |             |     |       |                |      |                  |
+| Grid 1 | 8.425e-03 |       67209 | 1.1 | 0.92% |                |      |                  |
+| Grid 2 | 8.523e-03 |       51383 | 1.1 | 2.35% |      0.988     | 7.09 |     8.36e-03     |
+| Grid 3 | 8.719e-03 |       41002 | -   | -     |                |      |                  |
+|        |           |             |     |       |                |      |                  |
+| Grid 2 | 8.523e-03 |       51383 | 1.1 | 2.79% |                |      |                  |
+| Grid 3 | 8.719e-03 |       41002 | 1.1 | 5.56% |      0.981     | 6.27 |     8.33e-03     |
+| Grid 4 | 9.198e-03 |       31719 | -   | -     |                |      |                  |
+|        |           |             |     |       |                |      |                  |
+
+If we activate the Oberkampf and Roy correction, as shown in the following:
+
+```python
+from pyGCS import GCS
+
+ # create a grid convergence study object without oberkampg correction
+ gcs = pyGCS.GCS(dimension=2, simulation_order=2, volume=456.745, oberkampf_correction=True,
+                 cells=[67209, 51383, 41002, 31719],
+                 solution=[0.00842471, 0.00852288, 0.00871879, 0.00919801])
+
+ # output information to Markdown-formated table
+ gcs.print_table(output_type='markdown', output_path='.')
+```
+
+we obtain a GCI calculation as shown in the following
+
+
+|        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |
+|--------|:---------:|:-----------:|:---:|:------:|:--------------:|:----:|:----------------:|
+|        |           |             |     |        |                |      |                  |
+| Grid 1 | 8.425e-03 |       67209 | 1.1 | 11.35% |                |      |                  |
+| Grid 2 | 8.523e-03 |       51383 | 1.1 | 27.24% |      1.835     | 2.00 |     8.36e-03     |
+| Grid 3 | 8.719e-03 |       41002 | -   | -      |                |      |                  |
+|        |           |             |     |        |                |      |                  |
+| Grid 2 | 8.523e-03 |       51383 | 1.1 | 27.24% |                |      |                  |
+| Grid 3 | 8.719e-03 |       41002 | 1.1 | 56.34% |      1.651     | 2.00 |     8.33e-03     |
+| Grid 4 | 9.198e-03 |       31719 | -   | -      |                |      |                  |
+|        |           |             |     |        |                |      |                  |
+
+We can see that the order is restricted to 2 once the Oberkampf and Roy correction is applied, as this is the order at which the simulation was run. The safety factor is not shown but also changed internally which causes a significantly larger GCI value for all grids. The apparent order without Oberkampf and Roy correction is rather large due to a small grid refinement ratio of 1.1. Thus, the GCI value may seem high, although the extrapolated value suggests that the solution obtained on the finest grid (Grid 1) is not too far away from a grid independent result. Thus, the Oberkampf and Roy correction may in principle be useful but it needs to be verified that it does not unnecessarily inflate the GCI value calulcation.
+
+## [4.6 Working with the low-level GCI class](#)
 
 If we instead want to directly access to GCI calculation and its parameters in a raw format, we need to use the ```GCI``` class instead, whose constructor takes the same arguments as the ```GCS``` class. This may be useful as alluded to above when the GCI calculation should be included into a custom toolchain where these parameters may be used to automatically construct computational grids of if we quickly want to get values interactively thorugh a python shell. Consider the following python shell session below:
 
@@ -273,8 +344,10 @@ All properties which have a getter can also be set dynamically. The following li
 - ```extrapolated_value```: The extrapolated value of the solution, i.e. the values specified in the ```solution``` list that would be obtained for a grid without any mesh induced errors (GCI value going towards 0).
 - ```gci```: The GCI value itself. Will always contain Ncells - 1 elements, where the first entry is the GCI calculated from the fine to the medium grid and the second entry the GCI calculated from the medium to the coarse grid.
 - ```asymptotic_gci```: Checks by how far we are away from a grid independent solution. A value of 1 (or close to) indicates grid independence.
+- ```oberkampf_correction```: This requires the ```simulation order``` to be specified as an input. According to Oberkampf and Roy [3], we need to limit the calculated ```apparent order``` to be not larger than the ```simulation_order```, as well as increase the ```safety_factor``` if both orders (simulation and apparent) are more than 10% apart. Applying this correction is a conservative measure and may inflate the GCI value, especially for small grid ```refinement_ratios```.
 
 # [5. References](#)
 
-1. Celik et al. "Procedure of Estimation and Reporting of Uncertainty Due to Discretization in CFD Applications", _Journal of Fluids Engineering_, 130(**7**), 2008  
+1. Celik et al., "Procedure of Estimation and Reporting of Uncertainty Due to Discretization in CFD Applications", _Journal of Fluids Engineering_, 130(**7**), 2008  (https://doi.org/10.1115/1.2960953)
 2. https://www.grc.nasa.gov/www/wind/valid/tutorial/spatconv.html
+3. Oberkampf and Roy, "Verification and Validation in Scientific Computing", Cambridge University Press, 2013 (https://doi.org/10.1017/CBO9780511760396)
