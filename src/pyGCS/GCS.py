@@ -1,3 +1,4 @@
+import os
 from .GCI import GCI
 
 
@@ -65,13 +66,15 @@ class GCS(object):
     def get(self, key):
         return self.__data[key]
 
-    def print_table(self, type='markdown'):
-        if type == 'markdown':
-            self.__markdown_table()
-        elif type == 'latex':
-            self.__latex_table()
+    def print_table(self, output_type='markdown', output_path=''):
+        if output_type == 'markdown':
+            self.__markdown_table(output_path)
+        elif output_type == 'latex':
+            self.__latex_table(output_path)
+        elif output_type == 'word':
+            self.__word_table(output_path)
 
-    def __markdown_table(self):
+    def __markdown_table(self, output_path):
         table = f'''
 |        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |
 |--------|:---------:|:-----------:|:---:|:-----:|:--------------:|:----:|:----------------:|'''
@@ -82,23 +85,26 @@ class GCS(object):
 | Grid {study+2} | {self.__data['solution'][study][1]:.3e} | {self.__data['cells'][study][1]:11d} | {self.__data['refinement_ratio'][study][1]:.1f} | {100 * self.__data['gci'][study][1]:.2f}% |      {self.__data['asymptotic_gci'][study]:.3f}     | {self.__data['apparent_order'][study]:.2f} |     {self.__data['extrapolated_value'][study]:.2e}     |
 | Grid {study+3} | {self.__data['solution'][study][2]:.3e} | {self.__data['cells'][study][2]:11d} | -   | -     |                |      |                  |'''
         table += f'''
-|        |           |             |     |       |                |      |                  |'''
-        file = open('table.md', 'w')
+|        |           |             |     |       |                |      |                  |
+Generated using pyGCS (Grid Convergence Study)
+- https://github.com/tomrobin-teschner/pyGCS
+- https://pypi.org/project/pygcs/'''
+        file = open(os.path.join(output_path, 'table.md'), 'w')
         file.write(table)
         file.close()
 
-    def __latex_table(self):
+    def __latex_table(self, output_path):
 
         table = f'''
 % You have to add the following packages to your preamble to make this table work in your document
 % \\usepackage{{booktabs}}
 % \\usepackage{{multirow}}
 \\begin{{table}}[tbp]
-\\caption{{Grid convergence study over {self.number_of_gci_studies_required + 2} grids. $ \phi $ represents the \\textbf{{INSERT MEANING OF PHI HERE}} and $ \phi_{{extrapolated}} $ its extrapolated value. $ N_{{cells}} $ is the number of grid elements, $ r $ the refinement ration between two successive grids. $ GCI $ is the grid convergence index in percent and its asymptotic value is provided by $ GCI_{{asymptotic}} $, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by $ p $.}}
+\\caption{{Grid convergence study over {self.number_of_gci_studies_required + 2} grids. $ \\phi $ represents the \\textbf{{INSERT MEANING OF PHI HERE}} and $ \\phi_{{extrapolated}} $ its extrapolated value. $ N_{{cells}} $ is the number of grid elements, $ r $ the refinement ration between two successive grids. $ GCI $ is the grid convergence index in percent and its asymptotic value is provided by $ GCI_{{asymptotic}} $, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by $ p $.}}
 \\label{{tab:gci_study}}
 \\begin{{tabular}}{{@{{}}lccccccc@{{}}}}
 \\toprule
-& $ \phi $ & $ N_{{cells}} $ & $ r $ & $ GCI $ & $ GCI_{{asymptotic}} $ & $ p $ & $ \phi_{{extrapolated}} $ \\\\ \\midrule
+& $ \\phi $ & $ N_{{cells}} $ & $ r $ & $ GCI $ & $ GCI_{{asymptotic}} $ & $ p $ & $ \\phi_{{extrapolated}} $ \\\\ \\midrule
 '''
         for study in range(0, self.number_of_gci_studies_required):
 
@@ -120,6 +126,27 @@ Grid {study+2} & {self.__data['solution'][study][1]:.2e} & {self.__data['cells']
 % - https://github.com/tomrobin-teschner/pyGCS
 % - https://pypi.org/project/pygcs/
 '''
-        file = open('table.tex', 'w')
+        file = open(os.path.join(output_path, 'table.tex'), 'w')
+        file.write(table)
+        file.close()
+
+    def __word_table(self, output_path):
+        table = f'''
+Generated using pyGCS (Grid Convergence Study)
+- https://github.com/tomrobin-teschner/pyGCS
+- https://pypi.org/project/pygcs/
+
+Generate an empty table in word with dimensions 8 (columns) x {1 + 4 * self.number_of_gci_studies_required} (rows), select all cells and copy the content after the caption below into the table
+
+Table 1: Grid convergence study over {self.number_of_gci_studies_required + 2} grids. phi represents the {{INSERT MEANING OF PHI HERE}} and phi_extrapolated its extrapolated value. N_cells is the number of grid elements, r the refinement ration between two successive grids. GCI is the grid convergence index in percent and its asymptotic value is provided by GCI_asymptotic, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by p.
+
+\tphi\tN_cells\tr\tGCI\tGCI_asymptotic\tp\tphi_extrapolated'''
+        for study in range(0, self.number_of_gci_studies_required):
+            table += f'''
+
+Grid {study+1}\t{self.__data['solution'][study][0]:.3e}\t{self.__data['cells'][study][0]:11d}\t{self.__data['refinement_ratio'][study][0]:.1f}\t{100 * self.__data['gci'][study][0]:.2f}%\t\t\t
+Grid {study+2}\t{self.__data['solution'][study][1]:.3e}\t{self.__data['cells'][study][1]:11d}\t{self.__data['refinement_ratio'][study][1]:.1f}\t{100 * self.__data['gci'][study][1]:.2f}% \t{self.__data['asymptotic_gci'][study]:.3f}\t{self.__data['apparent_order'][study]:.2f}\t{self.__data['extrapolated_value'][study]:.2e}
+Grid {study+3}\t{self.__data['solution'][study][2]:.3e}\t{self.__data['cells'][study][2]:11d}\t\t\t\t\t'''
+        file = open(os.path.join(output_path, 'table.txt'), 'w')
         file.write(table)
         file.close()

@@ -73,5 +73,3 @@ def test_4_grids_gci_reverse_order(airfoil_grid_4_grids, airfoil_grid_4_grids_re
 
     # assert
     assert gci == gci_reverse
-
-    sut.print_table()
