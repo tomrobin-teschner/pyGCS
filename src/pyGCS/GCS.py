@@ -75,81 +75,60 @@ class GCS(object):
             self.__word_table(output_path)
 
     def __markdown_table(self, output_path):
-        table = f'''
-Generated using pyGCS (Grid Convergence Study)
-- https://github.com/tomrobin-teschner/pyGCS
-- https://pypi.org/project/pygcs/
-
-Table 1: Grid convergence study over {self.number_of_gci_studies_required + 2} grids. phi represents the {{INSERT MEANING OF PHI HERE}} and phi_extrapolated its extrapolated value. N_cells is the number of grid elements, r the refinement ration between two successive grids. GCI is the grid convergence index in percent and its asymptotic value is provided by GCI_asymptotic, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by p.
-
-|        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |
-|--------|:---------:|:-----------:|:---:|:-----:|:--------------:|:----:|:----------------:|'''
+        table = f"Generated using pyGCS (Grid Convergence Study)\n"
+        table += f"- https://github.com/tomrobin-teschner/pyGCS\n"
+        table += f"- https://pypi.org/project/pygcs/\n\n"
+        table += f"Table 1: Grid convergence study over {self.number_of_gci_studies_required + 2} grids. phi represents the {{INSERT MEANING OF PHI HERE}} and phi_extrapolated its extrapolated value. N_cells is the number of grid elements, r the refinement ration between two successive grids. GCI is the grid convergence index in percent and its asymptotic value is provided by GCI_asymptotic, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by p.\n\n"
+        table += f"|        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |\n"
+        table += f"|--------|:---------:|:-----------:|:---:|:-----:|:--------------:|:----:|:----------------:|\n"
         for study in range(0, self.number_of_gci_studies_required):
-            table += f'''
-|        |           |             |     |       |                |      |                  |
-| Grid {study+1} | {self.__data['solution'][study][0]:.3e} | {self.__data['cells'][study][0]:11d} | {self.__data['refinement_ratio'][study][0]:.1f} | {100 * self.__data['gci'][study][0]:.2f}% |                |      |                  |
-| Grid {study+2} | {self.__data['solution'][study][1]:.3e} | {self.__data['cells'][study][1]:11d} | {self.__data['refinement_ratio'][study][1]:.1f} | {100 * self.__data['gci'][study][1]:.2f}% |      {self.__data['asymptotic_gci'][study]:.3f}     | {self.__data['apparent_order'][study]:.2f} |     {self.__data['extrapolated_value'][study]:.2e}     |
-| Grid {study+3} | {self.__data['solution'][study][2]:.3e} | {self.__data['cells'][study][2]:11d} | -   | -     |                |      |                  |'''
-        table += f'''
-|        |           |             |     |       |                |      |                  |'''
-        file = open(os.path.join(output_path, 'table.md'), 'w')
-        file.write(table)
-        file.close()
+            table += f"|        |           |             |     |       |                |      |                  |\n"
+            table += f"| Grid {study+1} | {self.__data['solution'][study][0]:.3e} | {self.__data['cells'][study][0]:11d} | {self.__data['refinement_ratio'][study][0]:.1f} | {100 * self.__data['gci'][study][0]:.2f}% |                |      |                  |\n"
+            table += f"| Grid {study+2} | {self.__data['solution'][study][1]:.3e} | {self.__data['cells'][study][1]:11d} | {self.__data['refinement_ratio'][study][1]:.1f} | {100 * self.__data['gci'][study][1]:.2f}% |      {self.__data['asymptotic_gci'][study]:.3f}     | {self.__data['apparent_order'][study]:.2f} |     {self.__data['extrapolated_value'][study]:.2e}     |\n"
+            table += f"| Grid {study+3} | {self.__data['solution'][study][2]:.3e} | {self.__data['cells'][study][2]:11d} | -   | -     |                |      |                  |\n"
+        table += f"|        |           |             |     |       |                |      |                  |"
+        self.__write_table(table, output_path, "md")
 
     def __latex_table(self, output_path):
-
-        table = f'''
-% You have to add the following packages to your preamble to make this table work in your document
-% \\usepackage{{booktabs}}
-% \\usepackage{{multirow}}
-\\begin{{table}}[tbp]
-\\caption{{Grid convergence study over {self.number_of_gci_studies_required + 2} grids. $ \\phi $ represents the \\textbf{{INSERT MEANING OF PHI HERE}} and $ \\phi_{{extrapolated}} $ its extrapolated value. $ N_{{cells}} $ is the number of grid elements, $ r $ the refinement ration between two successive grids. $ GCI $ is the grid convergence index in percent and its asymptotic value is provided by $ GCI_{{asymptotic}} $, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by $ p $.}}
-\\label{{tab:gci_study}}
-\\begin{{tabular}}{{@{{}}lccccccc@{{}}}}
-\\toprule
-& $ \\phi $ & $ N_{{cells}} $ & $ r $ & $ GCI $ & $ GCI_{{asymptotic}} $ & $ p $ & $ \\phi_{{extrapolated}} $ \\\\ \\midrule
-'''
+        table = f"% Generated using pyGCS (Grid Convergence Study)\n"
+        table += f"% - https://github.com/tomrobin-teschner/pyGCS\n"
+        table += f"% - https://pypi.org/project/pygcs/\n\n"
+        table += f"% You have to add the following packages to your preamble to make this table work in your document\n"
+        table += f"% \\usepackage{{booktabs}}\n"
+        table += f"% \\usepackage{{multirow}}\n"
+        table += f"\\begin{{table}}[tbp]\n"
+        table += f"\\caption{{Grid convergence study over {self.number_of_gci_studies_required + 2} grids. $ \\phi $ represents the \\textbf{{INSERT MEANING OF PHI HERE}} and $ \\phi_{{extrapolated}} $ its extrapolated value. $ N_{{cells}} $ is the number of grid elements, $ r $ the refinement ration between two successive grids. $ GCI $ is the grid convergence index in percent and its asymptotic value is provided by $ GCI_{{asymptotic}} $, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by $ p $.}}\n"
+        table += f"\\label{{tab:gci_study}}\n"
+        table += f"\\begin{{tabular}}{{@{{}}lccccccc@{{}}}}\n"
+        table += f"\\toprule\n"
+        table += f"& $ \\phi $ & $ N_{{cells}} $ & $ r $ & $ GCI $ & $ GCI_{{asymptotic}} $ & $ p $ & $ \\phi_{{extrapolated}} $ \\\\ \\midrule\n"
         for study in range(0, self.number_of_gci_studies_required):
 
-            table += f'''
-Grid {study+1} & {self.__data['solution'][study][0]:.3e} & {self.__data['cells'][study][0]} & {self.__data['refinement_ratio'][study][0]:.1f} & {100 * self.__data['gci'][study][0]:.2f}\\%   & \\multirow{{3}}{{*}}{{ {self.__data['asymptotic_gci'][study]:.3f} }} & \\multirow{{3}}{{*}}{{ {self.__data['apparent_order'][study]:.2f} }} & \\multirow{{3}}{{*}}{{ {self.__data['extrapolated_value'][study]:.2e} }} \\\\
-Grid {study+2} & {self.__data['solution'][study][1]:.2e} & {self.__data['cells'][study][1]}  & {self.__data['refinement_ratio'][study][1]:.1f} & {100 * self.__data['gci'][study][1]:.2f}\\% &                       &                      &                       \\\\
-'''
+            table += f"Grid {study+1} & {self.__data['solution'][study][0]:.3e} & {self.__data['cells'][study][0]} & {self.__data['refinement_ratio'][study][0]:.1f} & {100 * self.__data['gci'][study][0]:.2f}\\%   & \\multirow{{3}}{{*}}{{ {self.__data['asymptotic_gci'][study]:.3f} }} & \\multirow{{3}}{{*}}{{ {self.__data['apparent_order'][study]:.2f} }} & \\multirow{{3}}{{*}}{{ {self.__data['extrapolated_value'][study]:.2e} }} \\\\ \n"
+            table += f"Grid {study+2} & {self.__data['solution'][study][1]:.2e} & {self.__data['cells'][study][1]}  & {self.__data['refinement_ratio'][study][1]:.1f} & {100 * self.__data['gci'][study][1]:.2f}\\% &                       &                      &                       \\\\ \n"
             if study == self.number_of_gci_studies_required - 1:
-                table += f'''Grid {study+3} & {self.__data['solution'][study][2]:.2e} & {self.__data['cells'][study][2]}  & -   & -     &                       &                      &                       \\\\ \\bottomrule
-                '''
+                table += f"Grid {study+3} & {self.__data['solution'][study][2]:.2e} & {self.__data['cells'][study][2]}  & -   & -     &                       &                      &                       \\\\ \\bottomrule \n"
             else:
-                table += f'''Grid {study+3} & {self.__data['solution'][study][2]:.2e} & {self.__data['cells'][study][2]}  & -   & -     &                       &                      &                       \\\\ \\cmidrule(r){{1-8}}
-                '''
-
-        table += f'''
-\\end{{tabular}}
-\\end{{table}}
-% Generated using pyGCS (Grid Convergence Study)
-% - https://github.com/tomrobin-teschner/pyGCS
-% - https://pypi.org/project/pygcs/
-'''
-        file = open(os.path.join(output_path, 'table.tex'), 'w')
-        file.write(table)
-        file.close()
+                table += f"Grid {study+3} & {self.__data['solution'][study][2]:.2e} & {self.__data['cells'][study][2]}  & -   & -     &                       &                      &                       \\\\ \\cmidrule(r){{1-8}} \n"
+        table += f"\\end{{tabular}}\n"
+        table += f"\\end{{table}}\n"
+        self.__write_table(table, output_path, "tex")
 
     def __word_table(self, output_path):
-        table = f'''
-Generated using pyGCS (Grid Convergence Study)
-- https://github.com/tomrobin-teschner/pyGCS
-- https://pypi.org/project/pygcs/
-
-Generate an empty table in word with dimensions 8 (columns) x {1 + 4 * self.number_of_gci_studies_required} (rows), select all cells and copy the content after the caption below into the table
-
-Table 1: Grid convergence study over {self.number_of_gci_studies_required + 2} grids. phi represents the {{INSERT MEANING OF PHI HERE}} and phi_extrapolated its extrapolated value. N_cells is the number of grid elements, r the refinement ration between two successive grids. GCI is the grid convergence index in percent and its asymptotic value is provided by GCI_asymptotic, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by p.
-
-\tphi\tN_cells\tr\tGCI\tGCI_asymptotic\tp\tphi_extrapolated'''
+        table = f"Generated using pyGCS (Grid Convergence Study)\n"
+        table += f"- https://github.com/tomrobin-teschner/pyGCS\n"
+        table += f"- https://pypi.org/project/pygcs/\n\n"
+        table += f"Generate an empty table in word with dimensions 8 (columns) x {1 + 4 * self.number_of_gci_studies_required} (rows), select all cells and copy the content after the caption below into the table\n\n"
+        table += f"Table 1: Grid convergence study over {self.number_of_gci_studies_required + 2} grids. phi represents the {{INSERT MEANING OF PHI HERE}} and phi_extrapolated its extrapolated value. N_cells is the number of grid elements, r the refinement ration between two successive grids. GCI is the grid convergence index in percent and its asymptotic value is provided by GCI_asymptotic, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by p.\n"
+        table += f"\tphi\tN_cells\tr\tGCI\tGCI_asymptotic\tp\tphi_extrapolated\n"
         for study in range(0, self.number_of_gci_studies_required):
-            table += f'''
+            table += f"Grid {study+1}\t{self.__data['solution'][study][0]:.3e}\t{self.__data['cells'][study][0]:11d}\t{self.__data['refinement_ratio'][study][0]:.1f}\t{100 * self.__data['gci'][study][0]:.2f}%\t\t\t\n"
+            table += f"Grid {study+2}\t{self.__data['solution'][study][1]:.3e}\t{self.__data['cells'][study][1]:11d}\t{self.__data['refinement_ratio'][study][1]:.1f}\t{100 * self.__data['gci'][study][1]:.2f}% \t{self.__data['asymptotic_gci'][study]:.3f}\t{self.__data['apparent_order'][study]:.2f}\t{self.__data['extrapolated_value'][study]:.2e}\n"
+            table += f"Grid {study+3}\t{self.__data['solution'][study][2]:.3e}\t{self.__data['cells'][study][2]:11d}\t\t\t\t\t\n"
+        self.__write_table(table, output_path, "txt")
 
-Grid {study+1}\t{self.__data['solution'][study][0]:.3e}\t{self.__data['cells'][study][0]:11d}\t{self.__data['refinement_ratio'][study][0]:.1f}\t{100 * self.__data['gci'][study][0]:.2f}%\t\t\t
-Grid {study+2}\t{self.__data['solution'][study][1]:.3e}\t{self.__data['cells'][study][1]:11d}\t{self.__data['refinement_ratio'][study][1]:.1f}\t{100 * self.__data['gci'][study][1]:.2f}% \t{self.__data['asymptotic_gci'][study]:.3f}\t{self.__data['apparent_order'][study]:.2f}\t{self.__data['extrapolated_value'][study]:.2e}
-Grid {study+3}\t{self.__data['solution'][study][2]:.3e}\t{self.__data['cells'][study][2]:11d}\t\t\t\t\t'''
-        file = open(os.path.join(output_path, 'table.txt'), 'w')
-        file.write(table)
+    @staticmethod
+    def __write_table(content, output_path, extension):
+        file = open(os.path.join(output_path, 'table.' + extension), 'w')
+        file.write(content)
         file.close()
