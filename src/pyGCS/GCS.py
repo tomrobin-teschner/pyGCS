@@ -76,6 +76,8 @@ class GCS(object):
 
     def __markdown_table(self, output_path):
         table = f'''
+Table 1: Grid convergence study over {self.number_of_gci_studies_required + 2} grids. phi represents the {{INSERT MEANING OF PHI HERE}} and phi_extrapolated its extrapolated value. N_cells is the number of grid elements, r the refinement ration between two successive grids. GCI is the grid convergence index in percent and its asymptotic value is provided by GCI_asymptotic, where a value close to unity indicates a grid independent solution. The order achieved in the simulation is given by p.
+
 |        |  phi      |   N_cells   |  r  |  GCI  | GCI_asymptotic |  p   | phi_extrapolated |
 |--------|:---------:|:-----------:|:---:|:-----:|:--------------:|:----:|:----------------:|'''
         for study in range(0, self.number_of_gci_studies_required):
