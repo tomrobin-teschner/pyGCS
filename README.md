@@ -1,6 +1,7 @@
 [![PyPI license](https://img.shields.io/pypi/l/pygcs.svg)](https://pypi.python.org/pypi/pygcs/)
 [![Generic badge](https://img.shields.io/badge/Version-v1.1.0-red.svg)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![Downloads](https://static.pepy.tech/personalized-badge/pygcs?period=total&units=international_system&left_color=black&right_color=orange&left_text=Downloads)](https://pepy.tech/project/pygcs)
 
 # Table of Contents
 1. [Introduction](#1-introduction)
