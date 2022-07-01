@@ -116,7 +116,7 @@ class GCI(object):
             p_old = p
             s = self.__sign(e32 / e21)
             q = log((pow(r21, p) - s) / (pow(r32, p) - s))
-            p = (1.0 / log(r21)) * fabs(fabs(log(e32 / e21)) + q)
+            p = (1.0 / log(r21)) * fabs(log(fabs(e32 / e21)) + q)
 
             residual = p - p_old
             if iteration == 1:

@@ -1,5 +1,7 @@
 # ignore automatically generated folders
 build/*
 dist/*
+.pytest_cache/*
 src/pyGCS.egg-info/*
 src/pyGCS_tomrobin_teschner.egg-info/*
+**/__pycache__/*
