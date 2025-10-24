@@ -135,7 +135,7 @@ class GCI(object):
         elif value > 0:
             return 1
         elif value < 0:
-            return 0
+            return -1
 
     def __calculate_relative_normalised_error(self):
         self.__relative_normalised_error = []
